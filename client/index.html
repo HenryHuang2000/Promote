@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Promote</title>
+    <style type="text/css">
+        canvas {
+            background: no-repeat url("client/images/table.jpg");
+            background-size: cover;
+            position: absolute;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .createRoom {
+            position: absolute;
+            top: 284px;
+            left: 480px;
+        }
+
+        .pass {
+            position: absolute;
+            top: calc(100vh - (10vw + 50px));
+            left: 30px;
+        }
+
+    </style>
+    <script src = "/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <canvas id = "canvas"></canvas>
+
+    <div id="homepage">
+        <form id="new-room">
+            <input type = "text"
+            style = "z-index:101; position:absolute; top: 284px; left:295px;"
+            placeholder = "Enter a room name"
+            id = "roomName"/>
+            <button id="createRoom" class="createRoom">Create</button>
+        </form>
+    </div>
+
+    <div id="game", style="display: none">
+        <form id="gameForm">
+            <button id="pass" class="pass">Pass</button>
+        </form>
+    </div>
+    
+    <script src="/client/dest/bundle.js"></script>
+</body>
+</html>
