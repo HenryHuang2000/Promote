@@ -1,5 +1,7 @@
 import dealCards from './deal_cards';
 
+let numPlayers = 4;
+
 export default function server_connections(socket, io, ROOM_LIST, SOCKET_LIST) {
     // Handling new connections to home page.
     console.log('New home page connection assigned as player ' + socket.id);
@@ -23,7 +25,7 @@ export default function server_connections(socket, io, ROOM_LIST, SOCKET_LIST) {
         }
 
         // If all players have joined, deal the cards.
-        if (room_players(room.name) >= 4) {
+        if (room_players(room.name) >= numPlayers) {
             console.log('all players joined.')
             deal_cards('big_two', room.name);
         }
@@ -36,7 +38,7 @@ export default function server_connections(socket, io, ROOM_LIST, SOCKET_LIST) {
         if (gameMode != 'big_two') numDecks = 2;
         let players = dealCards(numDecks);
         let clients = io.nsps["/"].adapter.rooms[roomName];
-        for (let i = 0; i < 4; i++) {
+        for (let i = 0; i < numPlayers; i++) {
             // Retrieve socket from socket list.
             SOCKET_LIST[Object.keys(clients.sockets)[i]].emit('dealCards', {
                 playerCards: players[i],

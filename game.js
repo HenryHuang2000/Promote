@@ -32,6 +32,8 @@
         return players;
     }
 
+    let numPlayers = 4;
+
     function server_connections(socket, io, ROOM_LIST, SOCKET_LIST) {
         // Handling new connections to home page.
         console.log('New home page connection assigned as player ' + socket.id);
@@ -55,7 +57,7 @@
             }
 
             // If all players have joined, deal the cards.
-            if (room_players(room.name) >= 4) {
+            if (room_players(room.name) >= numPlayers) {
                 console.log('all players joined.');
                 deal_cards('big_two', room.name);
             }
@@ -68,7 +70,7 @@
             if (gameMode != 'big_two') numDecks = 2;
             let players = dealCards(numDecks);
             let clients = io.nsps["/"].adapter.rooms[roomName];
-            for (let i = 0; i < 4; i++) {
+            for (let i = 0; i < numPlayers; i++) {
                 // Retrieve socket from socket list.
                 SOCKET_LIST[Object.keys(clients.sockets)[i]].emit('dealCards', {
                     playerCards: players[i],
@@ -187,9 +189,7 @@
 
         
         
-        gameData = big_two_logic(socket, io, gameData);    
-
-
+        gameData = big_two_logic(socket, io, gameData);
     });
 
 }());

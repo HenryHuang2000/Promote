@@ -1,51 +1,100 @@
 import {promiseDeal} from "./retrieve_cards";
 import cardSize from './card_dimensions';
-import {winWidth, winHeight, ctx} from './canvas';
+import {winWidth, winHeight, const_ctx, ctx} from './canvas';
+
+let sharedHeight = cardSize.vPos - 50;
 
 export default function draw_shared (playedCard) {
 
     promiseDeal.then(function(playerData) {
 
-        let position = playedCard.playerID - playerData[1] - 1;
+        for (let i = 1; i <= 4; i++) {
+            let curPlayer = (playerData[1] + i) % 4;
+            print_info(i, 13);
 
-        // If everyone has passed, clear the table.
-        if (playedCard.card == -2) {
-            ctx.clearRect(0, 0, winWidth, cardSize.vPos);
         }
-        // Case if passed.
-        else if (playedCard.card == -1)
-            print_pass(position);
-        // Otherwise draw the played card.
-        else {
-            print_card(playedCard.card, position);
-        }
+        console.log(typeof playedCard);
 
-        display_turn(playedCard.playerTurn);
+        if (typeof playedCard !== 'undefined') {
+            let position = playedCard.playerID - playerData[1] - 1;
+            // If everyone has passed, clear the table.
+            if (playedCard.card == -2) {
+                const_ctx.clearRect(0, 0, winWidth, cardSize.vPos);
+            } 
+            // Case if passed.
+            else if (playedCard.card == -1)
+                print_pass(position);
+            // Otherwise draw the played card.
+            else {
+                print_card(playedCard.card, position);
+            }
+
+            display_turn(playedCard.playerTurn);
+        }
     });
+}
+
+function print_info(position, numCards) {
+
+    const_ctx.shadowBlur = 3;
+    const_ctx.fillStyle = 'grey';
+
+    // Load cardbacks.
+    if (position == 2) {
+        let cardBack = new Image();
+        cardBack.onload = function () {
+            let startPos = (winWidth - (numCards + 1) * 25) / 2;
+            for (let i = 0; i < numCards; i++) {
+                const_ctx.drawImage(cardBack, startPos + i * 25, 5, 50, 70);
+            }
+            const_ctx.fillRect(winWidth / 4, 80, winWidth / 2, 30);
+        }
+        cardBack.src = 'client/images/cards/card_back_vertical.png';
+    }
+
+    let cardBack = new Image();
+    cardBack.onload = function () {
+
+        let startPos = (sharedHeight - (numCards + 1) * 25) / 2;
+        let xPos = 5;
+        if (position == 1) {     
+            const_ctx.fillRect(80, sharedHeight / 4, 30, sharedHeight / 2);
+        }
+        else if (position == 3) {
+            const_ctx.fillRect(winWidth - 110, sharedHeight / 4, 30, sharedHeight / 2);
+            xPos = winWidth - 75;
+        }
+
+        for (let i = 0; i < numCards; i++) {
+            const_ctx.drawImage(cardBack, xPos, startPos + i * 25, 70, 50);
+        }
+    }
+    cardBack.src = 'client/images/cards/card_back_horizontal.png';
+    
 }
 
 function print_pass(position) {
     let coord = position_to_coord(position, 'card');
-    ctx.clearRect(coord[0], coord[1], cardSize.width, cardSize.height);
-    ctx.textAlign = 'center';
+    const_ctx.clearRect(coord[0], coord[1], cardSize.width, cardSize.height);
+    const_ctx.textAlign = 'center';
     coord = position_to_coord(position, 'text');
-    ctx.fillText('Pass', coord[0], coord[1]);
+    const_ctx.fillText('Pass', coord[0], coord[1]);
 }
 
 function print_card(cardNum, position) {
     let coord = position_to_coord(position, 'card');
     let cardImg = new Image();
     cardImg.onload = function () {
-        ctx.drawImage(cardImg, coord[0], coord[1], cardSize.width, cardSize.height);
+        const_ctx.drawImage(cardImg, coord[0], coord[1], cardSize.width, cardSize.height);
     }
     cardImg.src = 'client/images/cards/' + cardNum + '.png';
 }
 
 function display_turn(turn) {
     // Display player turn.
-    ctx.clearRect(winWidth / 2 - 25, winHeight / 2 - 45, 35, 50);
-    ctx.textAlign = 'center';
-    ctx.fillText('player ' + turn + ' to play', winWidth / 2, winHeight / 2);
+    const_ctx.clearRect(winWidth / 2 - 25, winHeight / 2 - 45, 35, 50);
+    const_ctx.textAlign = 'center';
+    const_ctx.fillText('player ' + turn + ' to play', winWidth / 2, winHeight / 2);
 }
 
 function position_to_coord(position, type) {

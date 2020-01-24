@@ -1,11 +1,18 @@
 // Setup canvas in proportion to the window.
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext('2d');
+const const_canvas = document.getElementById("const_canvas");
+const const_ctx = const_canvas.getContext('2d');
+
+var int_canvas = document.getElementById("int_canvas");
+var ctx = int_canvas.getContext("2d");
+int_canvas.style.background = "none";
 
 const winWidth  = window.innerWidth;
 const winHeight = window.innerHeight;
 
-canvas.width  = winWidth;
-canvas.height = winHeight;
+const_canvas.width  = winWidth;
+const_canvas.height = winHeight;
 
-export {winWidth, winHeight, ctx};
+int_canvas.width  = winWidth;
+int_canvas.height = winHeight;
+
+export {winWidth, winHeight, const_ctx, ctx, const_canvas, int_canvas};

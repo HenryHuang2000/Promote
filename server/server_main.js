@@ -37,9 +37,5 @@ io.sockets.on('connection', function(socket){
     gameData.playerTurn = 0;
     gameData.prevCard = -1;
 
-    
-    
-    gameData = big_two_logic(socket, io, gameData);    
-
-
+    gameData = big_two_logic(socket, io, gameData);
 });

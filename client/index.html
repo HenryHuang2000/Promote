@@ -34,7 +34,9 @@
     <script src = "/socket.io/socket.io.js"></script>
 </head>
 <body>
-    <canvas id = "canvas"></canvas>
+    <canvas id = "const_canvas"></canvas>
+    <canvas id = "int_canvas"></canvas>
+    
 
     <div id="homepage">
         <form id="new-room">
@@ -43,12 +45,6 @@
             placeholder = "Enter a room name"
             id = "roomName"/>
             <button id="createRoom" class="createRoom">Create</button>
-        </form>
-    </div>
-
-    <div id="game", style="display: none">
-        <form id="gameForm">
-            <button id="pass" class="pass">Pass</button>
         </form>
     </div>
     

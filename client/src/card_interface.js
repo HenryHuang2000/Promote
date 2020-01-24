@@ -1,6 +1,6 @@
 // Interface for the cards. Every player has 26 cards.
 import cardSize from './card_dimensions';
-import {ctx} from './canvas';
+import {const_ctx} from './canvas';
 
 export default function drawCards (playerData) {
     console.log('drawing cards');
@@ -16,6 +16,7 @@ export default function drawCards (playerData) {
 }
 
 function draw_cards (playerCards) {
+
     // Load the cards.
     function loadCard(cardName) {
         return new Promise((resolve, reject) => {
@@ -35,7 +36,7 @@ function draw_cards (playerCards) {
         .then((card) => {
             card.forEach(function(card, i) {
                 let hPos = (cardSize.width / 2) * i + 10;
-                ctx.drawImage(card, hPos, cardSize.vPos, cardSize.width, cardSize.height);
+                const_ctx.drawImage(card, hPos, cardSize.vPos, cardSize.width, cardSize.height);
             });
         }).catch((err) => {
             console.error(err);
@@ -45,7 +46,7 @@ function draw_cards (playerCards) {
 function print_player_number(playerData) {
     let playerID = playerData[1] + 1;
     let playerNumber = 'You are player ' + playerID + ' / 4';
-    ctx.font = "60px Arial";
-    ctx.textAlign = 'left';
-    ctx.fillText(playerNumber, 100, 100);
+    const_ctx.font = "60px Arial";
+    const_ctx.textAlign = 'left';
+    const_ctx.fillText(playerNumber, 100, 100);
 }

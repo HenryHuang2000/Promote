@@ -9,4 +9,5 @@ import draw_shared from './shared_cards';
 // Initial drawing of the cards when hand is dealt.
 promiseDeal.then(playerData => drawCards(playerData));
 // Every time a card is played, update the shared canvas.
+draw_shared();
 socket.on('cardPlayed', playedCard => draw_shared(playedCard));
