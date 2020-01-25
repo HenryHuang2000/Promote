@@ -1,33 +1,59 @@
 export default function big_two_logic(socket, io, gameData) {
 
-    socket.on('cardClicked', function(playerAction) {
+    socket.on('cardsPlayed', function(playerAction) {
 
-        let card = playerAction.clickedCard;
-        // Check if playing the card is legal.
-        let legal = (playerAction.playerID == gameData.playerTurn);
-        // If legal and card is larger than previous.
-        if (legal && card > gameData.prevCard) legal_logic();
-        // If pass.
-        else if (legal && card == -1) pass_logic();
+        let cards = playerAction.selectedCards;
+        // Check if it is player's turn to play..
+        let legalTurn = (playerAction.playerID == gameData.playerTurn);
+        console.log(gameData.numCards);
+        console.log(cards.length);
+        let legalLength = (gameData.numCards == -1 || cards.length == gameData.numCards);
+        // If right turn and number of cards check that the cards are larger than prev.
+        if (legalTurn && legalLength && size_checker(cards)) legal_logic();
+
+        // // If pass.
+        // else if (legalTurn && card == -1) pass_logic();
+
         // Ignore illegal plays.
         else return;
 
-        if (gameData.playerTurn == 4) gameData.playerTurn = 0;
+
+        gameData.playerTurn %= 4;
         // Print the card played into the client side.
         io.in(playerAction.roomName).emit('cardPlayed', {
-            card: card,
+            cards: cards,
             playerID: playerAction.playerID + 1,
             playerTurn: gameData.playerTurn + 1
         });
 
+
+        // let gameData = {
+        //     ROUND_CARDS: [],
+        //     playerTurn: 0,
+        //     prevCards: [],
+        //     numCards: -1
+        // }
+
+
+        function size_checker(cards) {
+            // If first card to be played.
+            if (gameData.numCards == -1) return 1;
+            // For singles
+            if (cards.length == 1 && 
+                Math.max.apply(null, cards) > Math.max.apply(null, gameData.prevCards)) return 1;
+        }
         
         function legal_logic() {
-            // Store the played card in the round list.
-            gameData.ROUND_CARDS[playerAction.playerID] = card;
-            socket.emit('legalMove', {index: playerAction.index});
-            // Update prevCard.
-            gameData.prevCard = card;
+
+            // Tell the client move was legal.
+            socket.emit('legalMove', {cards: cards});
+            
+            // Update gameData.
+            console.log('legal move');
             gameData.playerTurn++;
+            gameData.prevCards = cards;
+            gameData.numCards = cards.length;
+            
         }
 
         function pass_logic() {

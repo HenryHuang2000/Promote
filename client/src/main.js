@@ -10,4 +10,4 @@ import draw_shared from './shared_cards';
 promiseDeal.then(playerData => drawCards(playerData));
 // Every time a card is played, update the shared canvas.
 draw_shared();
-socket.on('cardPlayed', playedCard => draw_shared(playedCard));
+socket.on('cardPlayed', playedCards => draw_shared(playedCards));

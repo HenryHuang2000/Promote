@@ -22,7 +22,8 @@ let ROOM_LIST = ['default_room'];
 let gameData = {
     ROUND_CARDS: [],
     playerTurn: 0,
-    prevCard: -1
+    prevCards: [],
+    numCards: -1
 }
 
 var io = require('socket.io')(serv,{});
@@ -35,7 +36,8 @@ io.sockets.on('connection', function(socket){
 
     gameData.ROUND_CARDS = [];
     gameData.playerTurn = 0;
-    gameData.prevCard = -1;
+    gameData.prevCards = [];
+    gameData.numCards = -1;
 
     gameData = big_two_logic(socket, io, gameData);
 });

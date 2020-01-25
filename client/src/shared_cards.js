@@ -4,33 +4,31 @@ import {winWidth, winHeight, const_ctx, ctx} from './canvas';
 
 let sharedHeight = cardSize.vPos - 50;
 
-export default function draw_shared (playedCard) {
+export default function draw_shared (playedCards) {
 
     promiseDeal.then(function(playerData) {
 
-        for (let i = 1; i <= 4; i++) {
-            let curPlayer = (playerData[1] + i) % 4;
-            print_info(i, 13);
-
-        }
-        console.log(typeof playedCard);
-
-        if (typeof playedCard !== 'undefined') {
-            let position = playedCard.playerID - playerData[1] - 1;
-            // If everyone has passed, clear the table.
-            if (playedCard.card == -2) {
-                const_ctx.clearRect(0, 0, winWidth, cardSize.vPos);
-            } 
-            // Case if passed.
-            else if (playedCard.card == -1)
-                print_pass(position);
-            // Otherwise draw the played card.
-            else {
-                print_card(playedCard.card, position);
+        if (typeof playedCards === 'undefined') {
+            for (let i = 1; i <= 4; i++) {
+                let curPlayer = (playerData[1] + i) % 4;
+                print_info(i, 13);
             }
-
-            display_turn(playedCard.playerTurn);
+            return;
         }
+
+        let position = playedCards.playerID - playerData[1] - 1;
+        // // If everyone has passed, clear the table.
+        // if (playedCards.card == -2) {
+        //     const_ctx.clearRect(0, 0, winWidth, cardSize.vPos);
+        // } 
+        // // Case if passed.
+        // else if (playedCards.card == -1)
+        //     print_pass(position);
+
+        // Otherwise draw the played card.
+        print_cards(playedCards.cards, position);
+
+        display_turn(playedCards.playerTurn);
     });
 }
 
@@ -47,7 +45,7 @@ function print_info(position, numCards) {
             for (let i = 0; i < numCards; i++) {
                 const_ctx.drawImage(cardBack, startPos + i * 25, 5, 50, 70);
             }
-            const_ctx.fillRect(winWidth / 4, 80, winWidth / 2, 30);
+            const_ctx.fillRect(winWidth / 2 - sharedHeight / 4, 80, sharedHeight / 2, 30);
         }
         cardBack.src = 'client/images/cards/card_back_vertical.png';
     }
@@ -81,13 +79,13 @@ function print_pass(position) {
     const_ctx.fillText('Pass', coord[0], coord[1]);
 }
 
-function print_card(cardNum, position) {
+function print_cards(cards, position) {
     let coord = position_to_coord(position, 'card');
     let cardImg = new Image();
     cardImg.onload = function () {
         const_ctx.drawImage(cardImg, coord[0], coord[1], cardSize.width, cardSize.height);
     }
-    cardImg.src = 'client/images/cards/' + cardNum + '.png';
+    cardImg.src = 'client/images/cards/' + cards[0] + '.png';
 }
 
 function display_turn(turn) {

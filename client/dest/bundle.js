@@ -117,7 +117,13 @@
 
         let clickedCards = [];
 
-        function clicked(event, playerCards) {
+        function clicked(event, playerData) {
+
+
+            
+
+
+            let playerCards = playerData[0];
             let x = event.clientX;
             let y = event.clientY;
             // If a card is clicked.
@@ -148,14 +154,28 @@
 
             // If play button is clicked.
             else if (x > winWidth - 123 && x < winWidth - 30 && y > cardSize.vPos - 53 && y < cardSize.vPos - 10) {  
-                console.log('play button clicked');
+                console.log(clickedCards);
+                
+                let selectedCards = [];
+                // Convert clicked cards into actual cards selected.
+                for (let i = 0; i < clickedCards.length; i++) {
+                    if (clickedCards[i] == 1) {
+                        selectedCards.push(playerCards[i]);
+                    }
+                }
+
+                
+                console.log(selectedCards);
+                // Clear the clicked cards array.
+                clickedCards = [];
+
+
                 // Tell the server which card was played.
-                // socket.emit('cardClicked', {
-                //     playerID: playerData[1],
-                //     clickedCard: playerCards[cardIndex],
-                //     index: cardIndex,
-                //     roomName: playerData[2]
-                // })
+                socket.emit('cardsPlayed', {
+                    playerID: playerData[1],
+                    selectedCards: selectedCards,
+                    roomName: playerData[2]
+                });
             }
 
 
@@ -178,14 +198,19 @@
             // }
 
             // Implement card selection.
-            let playerCards = playerData[0];
-            int_canvas.addEventListener("click", event => clicked(event, playerCards));
+            
+            int_canvas.addEventListener("click", event => clicked(event, playerData));
 
             // If the played card was legal, 
-            // redraw the client screen with the card removed.
-            socket.on('legalMove', function(card) {
-                playerCards.splice(card.index, 1);
+            // redraw the client screen with the cards removed.
+            socket.on('legalMove', function(played) {
+                
+                let playerCards = playerData[0];
+                // Remove common elements.
+                playerCards = playerCards.filter(val => !played.cards.includes(val));
+
                 const_ctx.clearRect(0, cardSize.vPos, winWidth, winHeight);
+                ctx.clearRect(0, cardSize.vPos, winWidth, winHeight);
                 drawCards([playerCards, playerData[1]]);
             });
         });
@@ -290,34 +315,31 @@
 
         let sharedHeight = cardSize.vPos - 50;
 
-        function draw_shared (playedCard) {
+        function draw_shared (playedCards) {
 
             promiseDeal.then(function(playerData) {
 
-                for (let i = 1; i <= 4; i++) {
-                    let curPlayer = (playerData[1] + i) % 4;
-                    print_info(i, 13);
-
-                }
-                console.log(typeof playedCard);
-
-                if (typeof playedCard !== 'undefined') {
-                    console.log(typeof playedCard);
-                    let position = playedCard.playerID - playerData[1] - 1;
-                    // If everyone has passed, clear the table.
-                    if (playedCard.card == -2) {
-                        const_ctx.clearRect(0, 0, winWidth, cardSize.vPos);
-                    } 
-                    // Case if passed.
-                    else if (playedCard.card == -1)
-                        print_pass(position);
-                    // Otherwise draw the played card.
-                    else {
-                        print_card(playedCard.card, position);
+                if (typeof playedCards === 'undefined') {
+                    for (let i = 1; i <= 4; i++) {
+                        let curPlayer = (playerData[1] + i) % 4;
+                        print_info(i, 13);
                     }
-
-                    display_turn(playedCard.playerTurn);
+                    return;
                 }
+
+                let position = playedCards.playerID - playerData[1] - 1;
+                // // If everyone has passed, clear the table.
+                // if (playedCards.card == -2) {
+                //     const_ctx.clearRect(0, 0, winWidth, cardSize.vPos);
+                // } 
+                // // Case if passed.
+                // else if (playedCards.card == -1)
+                //     print_pass(position);
+
+                // Otherwise draw the played card.
+                print_cards(playedCards.cards, position);
+
+                display_turn(playedCards.playerTurn);
             });
         }
 
@@ -334,7 +356,7 @@
                     for (let i = 0; i < numCards; i++) {
                         const_ctx.drawImage(cardBack, startPos + i * 25, 5, 50, 70);
                     }
-                    const_ctx.fillRect(winWidth / 4, 80, winWidth / 2, 30);
+                    const_ctx.fillRect(winWidth / 2 - sharedHeight / 4, 80, sharedHeight / 2, 30);
                 };
                 cardBack.src = 'client/images/cards/card_back_vertical.png';
             }
@@ -360,21 +382,13 @@
             
         }
 
-        function print_pass(position) {
-            let coord = position_to_coord(position, 'card');
-            const_ctx.clearRect(coord[0], coord[1], cardSize.width, cardSize.height);
-            const_ctx.textAlign = 'center';
-            coord = position_to_coord(position, 'text');
-            const_ctx.fillText('Pass', coord[0], coord[1]);
-        }
-
-        function print_card(cardNum, position) {
+        function print_cards(cards, position) {
             let coord = position_to_coord(position, 'card');
             let cardImg = new Image();
             cardImg.onload = function () {
                 const_ctx.drawImage(cardImg, coord[0], coord[1], cardSize.width, cardSize.height);
             };
-            cardImg.src = 'client/images/cards/' + cardNum + '.png';
+            cardImg.src = 'client/images/cards/' + cards[0] + '.png';
         }
 
         function display_turn(turn) {
@@ -425,6 +439,6 @@
         promiseDeal.then(playerData => drawCards(playerData));
         // Every time a card is played, update the shared canvas.
         draw_shared();
-        socket.on('cardPlayed', playedCard => draw_shared(playedCard));
+        socket.on('cardPlayed', playedCards => draw_shared(playedCards));
 
 }());
