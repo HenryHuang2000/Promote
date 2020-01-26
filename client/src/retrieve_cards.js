@@ -7,10 +7,13 @@ let promiseDeal = new Promise(function(resolve, reject) {
     socket.on('dealCards', function(data) {
         
         const_ctx.clearRect(0, 0, winWidth, 280);
-        // Show the username bar.
         const_ctx.fillStyle = 'grey';
-        const_ctx.shadowBlur = 3;
-        const_ctx.fillRect(150, cardSize.vPos - 50, winWidth - 300, 40);
+
+        // If player holds diamond 3, tell server.
+        if (data.playerCards.includes(1)) {
+            socket.emit('firstToPlay', {player: data.playerID, roomName: data.roomName});
+            const_ctx.fillStyle = 'orange';
+        }
 
         // Show the pass button.
         let passBtn = new Image();
@@ -26,10 +29,7 @@ let promiseDeal = new Promise(function(resolve, reject) {
         }
         playBtn.src = 'client/images/play_button.png';
 
-
         console.log("dealing cards");
-        const_ctx.textAlign = 'center';
-        const_ctx.fillText('player 1 to play', winWidth / 2, winHeight / 2);
         let playerData = [data.playerCards, data.playerID, data.roomName];
         resolve(playerData);
     });

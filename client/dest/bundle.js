@@ -36,10 +36,14 @@
             socket.on('dealCards', function(data) {
                 
                 const_ctx.clearRect(0, 0, winWidth, 280);
-                // Show the username bar.
                 const_ctx.fillStyle = 'grey';
-                const_ctx.shadowBlur = 3;
-                const_ctx.fillRect(150, cardSize.vPos - 50, winWidth - 300, 40);
+
+                // If player holds diamond 3, tell server.
+                if (data.playerCards.includes(1)) {
+                    console.log(data);
+                    socket.emit('firstToPlay', {player: data.playerID, roomName: data.roomName});
+                    const_ctx.fillStyle = 'orange';
+                }
 
                 // Show the pass button.
                 let passBtn = new Image();
@@ -55,10 +59,7 @@
                 };
                 playBtn.src = 'client/images/play_button.png';
 
-
                 console.log("dealing cards");
-                const_ctx.textAlign = 'center';
-                const_ctx.fillText('player 1 to play', winWidth / 2, winHeight / 2);
                 let playerData = [data.playerCards, data.playerID, data.roomName];
                 resolve(playerData);
             });
@@ -66,20 +67,16 @@
 
         // Interface for the cards. Every player has 26 cards.
 
-        function drawCards (playerData) {
+        function draw_cards (playerData) {
             console.log('drawing cards');
             let playerCards = playerData[0];
             // Sort the cards for better readability.
             playerCards.sort((a, b) => a - b);
             // Draw the cards.
-            draw_cards(playerCards);
-
-            // Shows your player number.
-            print_player_number(playerData);
-            
+            _draw_cards(playerCards);    
         }
 
-        function draw_cards (playerCards) {
+        function _draw_cards (playerCards) {
 
             // Load the cards.
             function loadCard(cardName) {
@@ -105,14 +102,6 @@
                 }).catch((err) => {
                     console.error(err);
                 });
-        }
-
-        function print_player_number(playerData) {
-            let playerID = playerData[1] + 1;
-            let playerNumber = 'You are player ' + playerID + ' / 4';
-            const_ctx.font = "60px Arial";
-            const_ctx.textAlign = 'left';
-            const_ctx.fillText(playerNumber, 100, 100);
         }
 
         let clickedCards = [];
@@ -153,9 +142,11 @@
             }
 
             // If play button is clicked.
-            else if (x > winWidth - 123 && x < winWidth - 30 && y > cardSize.vPos - 53 && y < cardSize.vPos - 10) {  
-                console.log(clickedCards);
+            else if (x > winWidth - 123 && x < winWidth - 30 && y > cardSize.vPos - 53 && y < cardSize.vPos - 10) {
                 
+                // Unselect the selected cards.
+                ctx.clearRect(0, cardSize.vPos, winWidth, winHeight);
+
                 let selectedCards = [];
                 // Convert clicked cards into actual cards selected.
                 for (let i = 0; i < clickedCards.length; i++) {
@@ -163,13 +154,8 @@
                         selectedCards.push(playerCards[i]);
                     }
                 }
-
-                
-                console.log(selectedCards);
                 // Clear the clicked cards array.
                 clickedCards = [];
-
-
                 // Tell the server which card was played.
                 socket.emit('cardsPlayed', {
                     playerID: playerData[1],
@@ -177,9 +163,6 @@
                     roomName: playerData[2]
                 });
             }
-
-
-
         }
 
         promiseDeal.then(function(playerData) {
@@ -198,20 +181,36 @@
             // }
 
             // Implement card selection.
-            
             int_canvas.addEventListener("click", event => clicked(event, playerData));
 
             // If the played card was legal, 
             // redraw the client screen with the cards removed.
             socket.on('legalMove', function(played) {
-                
-                let playerCards = playerData[0];
                 // Remove common elements.
-                playerCards = playerCards.filter(val => !played.cards.includes(val));
+                playerData[0] = playerData[0].filter(val => !played.cards.includes(val));
 
                 const_ctx.clearRect(0, cardSize.vPos, winWidth, winHeight);
-                ctx.clearRect(0, cardSize.vPos, winWidth, winHeight);
-                drawCards([playerCards, playerData[1]]);
+                draw_cards([playerData[0], playerData[1]]);
+            });
+
+
+            // If the played card was illegal, tell the user why.
+            socket.on('illegalMove', function(data) {
+                
+                let reason = data.reasons.indexOf(false);
+                switch (reason) {
+                    case 0:
+                        alert('It is not your turn to play.');
+                        break;
+                    case 1:
+                        alert('You have played the wrong number of cards.');
+                        break;
+                    case 2:
+                    default:
+                        alert('The cards you play must be larger than the previous player.');
+                        break;
+                }
+
             });
         });
 
@@ -313,19 +312,14 @@
             const_ctx.fillText('room name: ' + room.name, 100, 180);
         });
 
-        let sharedHeight = cardSize.vPos - 50;
+        const sharedHeight = cardSize.vPos - 50;
 
         function draw_shared (playedCards) {
 
             promiseDeal.then(function(playerData) {
 
-                if (typeof playedCards === 'undefined') {
-                    for (let i = 1; i <= 4; i++) {
-                        let curPlayer = (playerData[1] + i) % 4;
-                        print_info(i, 13);
-                    }
-                    return;
-                }
+                // Display info.
+                print_info(playerData[1], playedCards.playerTurn, 13);
 
                 let position = playedCards.playerID - playerData[1] - 1;
                 // // If everyone has passed, clear the table.
@@ -338,52 +332,60 @@
 
                 // Otherwise draw the played card.
                 print_cards(playedCards.cards, position);
-
-                display_turn(playedCards.playerTurn);
             });
         }
 
-        function print_info(position, numCards) {
+
+
+        function print_info(curPlayer, playerTurn, numCards) {
 
             const_ctx.shadowBlur = 3;
-            const_ctx.fillStyle = 'grey';
-
-            // Load cardbacks.
-            if (position == 2) {
-                let cardBack = new Image();
-                cardBack.onload = function () {
-                    let startPos = (winWidth - (numCards + 1) * 25) / 2;
-                    for (let i = 0; i < numCards; i++) {
-                        const_ctx.drawImage(cardBack, startPos + i * 25, 5, 50, 70);
-                    }
+            for (let position = 0; position < 4; position++) {
+                
+                // Indicate player turn.
+                const_ctx.fillStyle = 'grey';
+                if ((curPlayer + position) % 4 + 1 == playerTurn) const_ctx.fillStyle = 'orange';
+          
+                if (position == 0) {
+                    const_ctx.fillRect(150, cardSize.vPos - 50, winWidth - 300, 40);
+                }
+                // Load cardbacks.
+                else if (position == 2) {
+                    let cardBack = new Image();
+                    cardBack.onload = function () {
+                        let startPos = (winWidth - (numCards + 1) * 25) / 2;
+                        for (let i = 0; i < numCards; i++) {
+                            const_ctx.drawImage(cardBack, startPos + i * 25, 5, 50, 70);
+                        }
+                    };
+                    cardBack.src = 'client/images/cards/card_back_vertical.png';
+                    // Print playerTurn bar.
                     const_ctx.fillRect(winWidth / 2 - sharedHeight / 4, 80, sharedHeight / 2, 30);
-                };
-                cardBack.src = 'client/images/cards/card_back_vertical.png';
+                }
+                else {
+                    let xPos = 5;
+                    if (position == 1) {     
+                        const_ctx.fillRect(80, sharedHeight / 4, 30, sharedHeight / 2);
+                    }
+                    else if (position == 3) {
+                        const_ctx.fillRect(winWidth - 110, sharedHeight / 4, 30, sharedHeight / 2);
+                        xPos = winWidth - 75;
+                    }
+                    let cardBack = new Image();
+                    cardBack.onload = function () {
+                        let startPos = (sharedHeight - (numCards + 1) * 25) / 2;
+                        for (let i = 0; i < numCards; i++) {
+                            const_ctx.drawImage(cardBack, xPos, startPos + i * 25, 70, 50);
+                        }
+                    };
+                    cardBack.src = 'client/images/cards/card_back_horizontal.png';
+                }
             }
-
-            let cardBack = new Image();
-            cardBack.onload = function () {
-
-                let startPos = (sharedHeight - (numCards + 1) * 25) / 2;
-                let xPos = 5;
-                if (position == 1) {     
-                    const_ctx.fillRect(80, sharedHeight / 4, 30, sharedHeight / 2);
-                }
-                else if (position == 3) {
-                    const_ctx.fillRect(winWidth - 110, sharedHeight / 4, 30, sharedHeight / 2);
-                    xPos = winWidth - 75;
-                }
-
-                for (let i = 0; i < numCards; i++) {
-                    const_ctx.drawImage(cardBack, xPos, startPos + i * 25, 70, 50);
-                }
-            };
-            cardBack.src = 'client/images/cards/card_back_horizontal.png';
             
         }
 
         function print_cards(cards, position) {
-            let coord = position_to_coord(position, 'card');
+            let coord = position_to_coord(position, cards.length, 'card');
             let cardImg = new Image();
             cardImg.onload = function () {
                 const_ctx.drawImage(cardImg, coord[0], coord[1], cardSize.width, cardSize.height);
@@ -391,30 +393,25 @@
             cardImg.src = 'client/images/cards/' + cards[0] + '.png';
         }
 
-        function display_turn(turn) {
-            // Display player turn.
-            const_ctx.clearRect(winWidth / 2 - 25, winHeight / 2 - 45, 35, 50);
-            const_ctx.textAlign = 'center';
-            const_ctx.fillText('player ' + turn + ' to play', winWidth / 2, winHeight / 2);
-        }
-
-        function position_to_coord(position, type) {
+        function position_to_coord(position, numCards, type) {
             var coord = [];
             if (position < 0) position += 4;
 
+            let offset = cardSize.width * (numCards + 1) / 2;
+
             if (type == 'card') {
                 if (position == 0) {
-                    coord[0] = (winWidth - cardSize.width) / 2;
-                    coord[1] = cardSize.vPos - cardSize.height - 10;
+                    coord[0] = (winWidth - offset) / 2;
+                    coord[1] = sharedHeight - cardSize.height - 10;
                 } else if (position == 1) {
-                    coord[0] = 10;
-                    coord[1] = (winHeight - cardSize.height) / 2;
+                    coord[0] = 120;
+                    coord[1] = (sharedHeight - cardSize.height) / 2;
                 } else if (position == 2) {
-                    coord[0] = (winWidth - cardSize.width) / 2;
-                    coord[1] = 10;
+                    coord[0] = (winWidth - offset) / 2;
+                    coord[1] = 120;
                 } else {
-                    coord[0] = winWidth - cardSize.width - 10;
-                    coord[1] = (winHeight - cardSize.height) / 2;
+                    coord[0] = winWidth - offset - 120;
+                    coord[1] = (sharedHeight - cardSize.height) / 2;
                 }
             }
             else if (type == 'text') {
@@ -436,9 +433,11 @@
         }
 
         // Initial drawing of the cards when hand is dealt.
-        promiseDeal.then(playerData => drawCards(playerData));
+        promiseDeal.then(function (playerData) {
+            draw_cards(playerData);
+            socket.on('initGame', data => print_info(playerData[1], data.firstPlayer + 1, 13));    
+        });
         // Every time a card is played, update the shared canvas.
-        draw_shared();
         socket.on('cardPlayed', playedCards => draw_shared(playedCards));
 
 }());

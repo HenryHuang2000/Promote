@@ -2,20 +2,16 @@
 import cardSize from './card_dimensions';
 import {const_ctx} from './canvas';
 
-export default function drawCards (playerData) {
+export default function draw_cards (playerData) {
     console.log('drawing cards');
     let playerCards = playerData[0];
     // Sort the cards for better readability.
     playerCards.sort((a, b) => a - b);
     // Draw the cards.
-    draw_cards(playerCards);
-
-    // Shows your player number.
-    print_player_number(playerData);
-    
+    _draw_cards(playerCards);    
 }
 
-function draw_cards (playerCards) {
+function _draw_cards (playerCards) {
 
     // Load the cards.
     function loadCard(cardName) {
@@ -41,12 +37,4 @@ function draw_cards (playerCards) {
         }).catch((err) => {
             console.error(err);
         });
-}
-
-function print_player_number(playerData) {
-    let playerID = playerData[1] + 1;
-    let playerNumber = 'You are player ' + playerID + ' / 4';
-    const_ctx.font = "60px Arial";
-    const_ctx.textAlign = 'left';
-    const_ctx.fillText(playerNumber, 100, 100);
 }

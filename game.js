@@ -99,17 +99,21 @@
         socket.on('cardsPlayed', function(playerAction) {
 
             let cards = playerAction.selectedCards;
-            console.log(gameData.numCards);
-            console.log(cards.length);
+            // Check if it is player's turn to play..
+            let legalTurn = (playerAction.playerID == gameData.playerTurn);
             let legalLength = (gameData.numCards == -1 || cards.length == gameData.numCards);
             // If right turn and number of cards check that the cards are larger than prev.
-            if ( legalLength && size_checker(cards)) legal_logic();
+            if (legalTurn && legalLength && size_checker(cards)) legal_logic();
 
             // // If pass.
             // else if (legalTurn && card == -1) pass_logic();
 
             // Ignore illegal plays.
-            else return;
+            else {
+                let reasons = [legalTurn, legalLength, size_checker(cards)];
+                socket.emit('illegalMove', {reasons: reasons});
+                return;
+            }
 
 
             gameData.playerTurn %= 4;
@@ -131,10 +135,12 @@
 
             function size_checker(cards) {
                 // If first card to be played.
-                if (gameData.numCards == -1) return 1;
+                if (gameData.numCards == -1) return true;
                 // For singles
-                if (cards.length == 1 && 
-                    Math.max.apply(null, cards) > Math.max.apply(null, gameData.prevCards)) return 1;
+                let larger = Math.max.apply(null, cards) > Math.max.apply(null, gameData.prevCards);
+                if (cards.length == 1 && larger) return true;
+
+                return false;
             }
             
             function legal_logic() {
@@ -188,6 +194,13 @@
         gameData.playerTurn = 0;
         gameData.prevCards = [];
         gameData.numCards = -1;
+
+        // Determine who will play first.
+        socket.on('firstToPlay', function(data) {
+            gameData.playerTurn = data.player;
+            console.log(data.roomName);
+            io.in(data.roomName).emit('initGame', {firstPlayer: data.player});
+        });
 
         gameData = big_two_logic(socket, io, gameData);
     });

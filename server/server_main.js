@@ -39,5 +39,11 @@ io.sockets.on('connection', function(socket){
     gameData.prevCards = [];
     gameData.numCards = -1;
 
+    // Determine who will play first.
+    socket.on('firstToPlay', function(data) {
+        gameData.playerTurn = data.player;
+        io.in(data.roomName).emit('initGame', {firstPlayer: data.player});
+    })
+
     gameData = big_two_logic(socket, io, gameData);
 });
