@@ -23,7 +23,9 @@ let gameData = {
     ROUND_CARDS: [],
     playerTurn: 0,
     prevCards: [],
-    numCards: -1
+    numCards: -1,
+    passCounter: 0,
+    cardCounter: [13, 13, 13, 13]
 }
 
 var io = require('socket.io')(serv,{});
@@ -38,6 +40,8 @@ io.sockets.on('connection', function(socket){
     gameData.playerTurn = 0;
     gameData.prevCards = [];
     gameData.numCards = -1;
+    gameData.passCounter = 0;
+    gameData.cardCounter = [13, 13, 13, 13];
 
     // Determine who will play first.
     socket.on('firstToPlay', function(data) {

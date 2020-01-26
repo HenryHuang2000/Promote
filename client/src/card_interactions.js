@@ -35,7 +35,7 @@ promiseDeal.then(function(playerData) {
 
     // If the played card was illegal, tell the user why.
     socket.on('illegalMove', function(data) {
-        
+        // reasons = [legalTurn, legalLength, combo_checker(cards), size_checker(cards)];
         let reason = data.reasons.indexOf(false);
         switch (reason) {
             case 0:
@@ -45,6 +45,9 @@ promiseDeal.then(function(playerData) {
                 alert('You have played the wrong number of cards.');
                 break;
             case 2:
+                alert('You have played an invalid combo.');
+                break;
+            case 3:
             default:
                 alert('The cards you play must be larger than the previous player.');
                 break;

@@ -8,10 +8,10 @@ export default function draw_cards (playerData) {
     // Sort the cards for better readability.
     playerCards.sort((a, b) => a - b);
     // Draw the cards.
-    _draw_cards(playerCards);    
+    generic_draw_cards(playerCards, 0, cardSize.vPos);    
 }
 
-function _draw_cards (playerCards) {
+export function generic_draw_cards(playerCards, xPos, yPos) {
 
     // Load the cards.
     function loadCard(cardName) {
@@ -31,8 +31,8 @@ function _draw_cards (playerCards) {
         .all(playerCards.map(cardName => loadCard(cardName)))
         .then((card) => {
             card.forEach(function(card, i) {
-                let hPos = (cardSize.width / 2) * i + 10;
-                const_ctx.drawImage(card, hPos, cardSize.vPos, cardSize.width, cardSize.height);
+                let hPos = xPos + (cardSize.width / 2) * i + 10;
+                const_ctx.drawImage(card, hPos, yPos, cardSize.width, cardSize.height);
             });
         }).catch((err) => {
             console.error(err);

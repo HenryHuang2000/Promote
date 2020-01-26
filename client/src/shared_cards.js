@@ -1,6 +1,7 @@
 import {promiseDeal} from "./retrieve_cards";
 import cardSize from './card_dimensions';
 import {winWidth, winHeight, const_ctx} from './canvas';
+import {generic_draw_cards} from './card_interface';
 
 const sharedHeight = cardSize.vPos - 50;
 
@@ -9,19 +10,15 @@ export default function draw_shared (playedCards) {
     promiseDeal.then(function(playerData) {
 
         // Display info.
-        print_info(playerData[1], playedCards.playerTurn, 13);
+        print_info(playerData[1], playedCards.playerTurn, playedCards.cardCounter);
+        // If everyone has passed, clear the table.
+        if (playedCards.cards == 'clear_table') {
+            const_ctx.clearRect(115, 115, winWidth - 230, sharedHeight - 120);
+            return;
+        }
 
-        let position = playedCards.playerID - playerData[1] - 1;
-        // // If everyone has passed, clear the table.
-        // if (playedCards.card == -2) {
-        //     const_ctx.clearRect(0, 0, winWidth, cardSize.vPos);
-        // } 
-        // // Case if passed.
-        // else if (playedCards.card == -1)
-        //     print_pass(position);
-
-        // Otherwise draw the played card.
-        print_cards(playedCards.cards, position);
+        // Otherwise draw the played card.   
+        print_cards(playedCards, playerData);
     });
 }
 
@@ -29,66 +26,72 @@ export default function draw_shared (playedCards) {
 
 export function print_info(curPlayer, playerTurn, numCards) {
 
+    if (numCards.length == 0) numCards = [13, 13, 13, 13];
+    console.log(numCards);
+
     const_ctx.shadowBlur = 3;
     for (let position = 0; position < 4; position++) {
         
+        let absPlayer = (curPlayer + position) % 4;
         // Indicate player turn.
         const_ctx.fillStyle = 'grey';
-        if ((curPlayer + position) % 4 + 1 == playerTurn) const_ctx.fillStyle = 'orange';
-  
+        if (absPlayer + 1 == playerTurn) const_ctx.fillStyle = 'orange';
         if (position == 0) {
             const_ctx.fillRect(150, cardSize.vPos - 50, winWidth - 300, 40);
         }
-        // Load cardbacks.
+        else if (position == 1) {     
+            const_ctx.fillRect(80, sharedHeight / 4, 30, sharedHeight / 2);
+        }
         else if (position == 2) {
+            const_ctx.fillRect(winWidth / 2 - sharedHeight / 4, 80, sharedHeight / 2, 30);
+        }
+        else if (position == 3) {
+            const_ctx.fillRect(winWidth - 110, sharedHeight / 4, 30, sharedHeight / 2);
+        }
+
+        // Show how many cards each player has.
+        if (position == 2) {
+            
             let cardBack = new Image();
             cardBack.onload = function () {
-                let startPos = (winWidth - (numCards + 1) * 25) / 2;
-                for (let i = 0; i < numCards; i++) {
+                // Clear original cards.
+                const_ctx.clearRect(0, 0, winWidth, 75);
+                let startPos = (winWidth - (numCards[absPlayer] + 1) * 25) / 2;
+                for (let i = 0; i < numCards[absPlayer]; i++) {
                     const_ctx.drawImage(cardBack, startPos + i * 25, 5, 50, 70);
                 }
             }
             cardBack.src = 'client/images/cards/card_back_vertical.png';
-            // Print playerTurn bar.
-            const_ctx.fillRect(winWidth / 2 - sharedHeight / 4, 80, sharedHeight / 2, 30);
         }
-        else {
-            let xPos = 5;
-            if (position == 1) {     
-                const_ctx.fillRect(80, sharedHeight / 4, 30, sharedHeight / 2);
-            }
-            else if (position == 3) {
-                const_ctx.fillRect(winWidth - 110, sharedHeight / 4, 30, sharedHeight / 2);
-                xPos = winWidth - 75;
-            }
+        else if (position != 0) {
+            let xPos = 0;
+            if (position == 3) xPos = winWidth - 75;
             let cardBack = new Image();
             cardBack.onload = function () {
-                let startPos = (sharedHeight - (numCards + 1) * 25) / 2;
-                for (let i = 0; i < numCards; i++) {
+                // Clear original cards.
+                const_ctx.clearRect(xPos, 0, xPos + 75, sharedHeight);
+                let startPos = (sharedHeight - (numCards[absPlayer] + 1) * 25) / 2;
+                for (let i = 0; i < numCards[absPlayer]; i++) {
                     const_ctx.drawImage(cardBack, xPos, startPos + i * 25, 70, 50);
                 }
             }
             cardBack.src = 'client/images/cards/card_back_horizontal.png';
         }
+        
     }
     
 }
 
-function print_pass(position) {
-    let coord = position_to_coord(position, 'card');
-    const_ctx.clearRect(coord[0], coord[1], cardSize.width, cardSize.height);
-    const_ctx.textAlign = 'center';
-    coord = position_to_coord(position, 'text');
-    const_ctx.fillText('Pass', coord[0], coord[1]);
-}
+function print_cards(playedCards, playerData) {
 
-function print_cards(cards, position) {
+    let position = playedCards.playerID - playerData[1] - 1;
+    let cards = playedCards.cards;
     let coord = position_to_coord(position, cards.length, 'card');
-    let cardImg = new Image();
-    cardImg.onload = function () {
-        const_ctx.drawImage(cardImg, coord[0], coord[1], cardSize.width, cardSize.height);
-    }
-    cardImg.src = 'client/images/cards/' + cards[0] + '.png';
+
+    // Check for pass.
+    if (cards.length == 0) return;
+
+    generic_draw_cards(cards, coord[0], coord[1]);
 }
 
 function display_turn(turn) {
@@ -109,30 +112,15 @@ function position_to_coord(position, numCards, type) {
             coord[0] = (winWidth - offset) / 2;
             coord[1] = sharedHeight - cardSize.height - 10;
         } else if (position == 1) {
-            coord[0] = 120;
+            coord[0] = 110;
             coord[1] = (sharedHeight - cardSize.height) / 2;
         } else if (position == 2) {
             coord[0] = (winWidth - offset) / 2;
             coord[1] = 120;
         } else {
-            coord[0] = winWidth - offset - 120;
+            coord[0] = winWidth - offset - 130;
             coord[1] = (sharedHeight - cardSize.height) / 2;
         }
     }
-    else if (type == 'text') {
-        if (position == 0) {
-            coord[0] = winWidth / 2;
-            coord[1] = cardSize.vPos - 50;
-        } else if (position == 1) {
-            coord[0] = 100;
-            coord[1] = winHeight / 2;
-        } else if (position == 2) {
-            coord[0] = winWidth / 2;
-            coord[1] = 60;
-        } else {
-            coord[0] = winWidth - 100;
-            coord[1] = winHeight / 2;
-        }
-    } 
     return coord;
 }
