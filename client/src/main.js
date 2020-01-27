@@ -16,4 +16,4 @@ promiseDeal.then(function (playerData) {
 socket.on('cardPlayed', playedCards => draw_shared(playedCards));
 
 // Listen for a winner.
-socket.on('playerWon', data => win_screen(data.winner));
+socket.on('playerWon', data => win_screen(data.winner + 1));

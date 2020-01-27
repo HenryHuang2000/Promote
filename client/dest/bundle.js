@@ -5,18 +5,24 @@
         const const_canvas = document.getElementById("const_canvas");
         const const_ctx = const_canvas.getContext('2d');
 
-        var int_canvas = document.getElementById("int_canvas");
-        var ctx = int_canvas.getContext("2d");
-        int_canvas.style.background = "none";
+        const int_canvas = document.getElementById("int_canvas");
+        const ctx = int_canvas.getContext("2d");
+
+        const win_canvas = document.getElementById("win_canvas");
+        const win_ctx = win_canvas.getContext("2d");
 
         const winWidth  = window.innerWidth;
         const winHeight = window.innerHeight;
 
+        // Setting up canvas dimensions.
         const_canvas.width  = winWidth;
         const_canvas.height = winHeight;
 
         int_canvas.width  = winWidth;
         int_canvas.height = winHeight;
+
+        win_canvas.width  = winWidth;
+        win_canvas.height = winHeight;
 
         // Find suitable card dimensions.
         const maxCardHeight = (winWidth - 20) * 1.452 / 13.5;
@@ -195,19 +201,22 @@
 
             // If the played card was illegal, tell the user why.
             socket.on('illegalMove', function(data) {
-                // reasons = [legalTurn, legalLength, combo_checker(cards), size_checker(cards)];
+                // reasons = [legalTurn, !mustPlay, legalLength, combo_checker(cards), size_checker(cards)];
                 let reason = data.reasons.indexOf(false);
                 switch (reason) {
                     case 0:
                         alert('It is not your turn to play.');
                         break;
                     case 1:
-                        alert('You have played the wrong number of cards.');
+                        alert('It is your turn to play any card.');
                         break;
                     case 2:
-                        alert('You have played an invalid combo.');
+                        alert('You have played the wrong number of cards.');
                         break;
                     case 3:
+                        alert('You have played an invalid combo.');
+                        break;
+                    case 4:
                     default:
                         alert('The cards you play must be larger than the previous player.');
                         break;
@@ -431,12 +440,21 @@
 
         function win_screen(winner) {
 
-            const_ctx.clearRect(0, 0, winWidth, winHeight);
-            const_ctx.fillStyle = 'black';
-            const_ctx.font = "bold 100px Arial";
-            const_ctx.textAlign = "center";
-            const_ctx.shadowBlur = 0;
-            const_ctx.fillText('Player ' + winner + ' has won!', winWidth / 2, winHeight / 2);
+            // Show the win canvas.
+            win_canvas.style.display = "inline";
+
+            // Draw the table.
+            let table = new Image();
+            table.onload = function() {
+
+                win_ctx.drawImage(table, 0, 0, winWidth, winHeight);
+                win_ctx.fillStyle = 'black';
+                win_ctx.font = "bold 100px Arial";
+                win_ctx.textAlign = "center";
+                win_ctx.shadowBlur = 0;
+                win_ctx.fillText('Player ' + winner + ' has won!', winWidth / 2, winHeight / 2);
+            };
+            table.src = "client/images/table.jpg";    
         }
 
         // Initial drawing of the cards when hand is dealt.
@@ -448,6 +466,6 @@
         socket.on('cardPlayed', playedCards => draw_shared(playedCards));
 
         // Listen for a winner.
-        socket.on('playerWon', data => win_screen(data.winner));
+        socket.on('playerWon', data => win_screen(data.winner + 1));
 
 }());

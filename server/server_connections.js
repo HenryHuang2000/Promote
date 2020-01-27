@@ -1,4 +1,4 @@
-import dealCards from './deal_cards';
+import dealCards from './card_shuffler';
 
 let numPlayers = 4;
 
