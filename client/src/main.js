@@ -1,8 +1,8 @@
 import {socket, promiseDeal} from "./retrieve_cards";
 import draw_cards from './card_interface';
 import './card_interactions';
-import './waiting_room';
-import './game_room';
+import './lobby';
+import './waiting_for_players';
 import draw_shared, {print_info} from './shared_cards';
 import win_screen from './winner_screen';
 

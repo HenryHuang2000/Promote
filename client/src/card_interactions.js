@@ -1,23 +1,10 @@
 import {socket, promiseDeal} from './retrieve_cards';
 import cardSize from './card_dimensions';
 import draw_cards from './card_interface';
-import {winWidth, winHeight, const_ctx, int_canvas, ctx} from './canvas';
+import {winWidth, winHeight, const_ctx, int_canvas} from './canvas';
 import clicked from './card_selector';
 
 promiseDeal.then(function(playerData) {
-
-    // // Implement passing.
-    // let gameForm = document.getElementById('gameForm');
-    // let passButton = document.getElementById('pass');
-    // let passed = false;
-    // gameForm.onsubmit = function(e) {
-    //     e.preventDefault();
-    //     passButton.onclick = socket.emit('cardClicked', {
-    //         playerID: playerData[1],
-    //         clickedCard: -1,
-    //         roomName: playerData[2]
-    //     })
-    // }
 
     // Implement card selection.
     int_canvas.addEventListener("click", event => clicked(event, playerData));

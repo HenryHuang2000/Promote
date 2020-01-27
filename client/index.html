@@ -36,20 +36,20 @@
 <body>
     <canvas id = "const_canvas"></canvas>
     <canvas id = "int_canvas" style = "background: none"></canvas>
+
+    winWidth / 4 + 40, 320
+    <div id = "lobby_div" style ="display: none">
+        <form id="new_room_form">
+            <input type = "text"
+            style = "z-index:101; position:absolute; top: 320px"
+            autocomplete="off"
+            id = "roomName"/>
+        </form>
+        <canvas id = "lobby_canvas" style = "background: none"></canvas>
+    </div>
+    
     <canvas id = "win_canvas" style = "display: none"></canvas>
     
-    
-
-    <div id="homepage">
-        <form id="new-room">
-            <input type = "text"
-            style = "z-index:101; position:absolute; top: 284px; left:295px;"
-            placeholder = "Enter a room name"
-            id = "roomName"/>
-            <button id="createRoom" class="createRoom">Create</button>
-        </form>
-    </div>
-
 
     <script src="/client/dest/bundle.js"></script>
 </body>

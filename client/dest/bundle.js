@@ -5,8 +5,11 @@
         const const_canvas = document.getElementById("const_canvas");
         const const_ctx = const_canvas.getContext('2d');
 
+        const lobby_canvas = document.getElementById("lobby_canvas");
+        const lobby_ctx = lobby_canvas.getContext("2d");
+
         const int_canvas = document.getElementById("int_canvas");
-        const ctx = int_canvas.getContext("2d");
+        const int_ctx = int_canvas.getContext("2d");
 
         const win_canvas = document.getElementById("win_canvas");
         const win_ctx = win_canvas.getContext("2d");
@@ -17,6 +20,9 @@
         // Setting up canvas dimensions.
         const_canvas.width  = winWidth;
         const_canvas.height = winHeight;
+
+        lobby_canvas.width  = winWidth;
+        lobby_canvas.height = winHeight;
 
         int_canvas.width  = winWidth;
         int_canvas.height = winHeight;
@@ -133,20 +139,20 @@
                 
                 // If clicked, unclick.
                 if (clickedCards[cardIndex] == 1) {
-                    ctx.clearRect(selectPos, cardSize.vPos, selectWidth, cardSize.height);
+                    int_ctx.clearRect(selectPos, cardSize.vPos, selectWidth, cardSize.height);
                     clickedCards[cardIndex] = 0;
                 } 
                 // Show which card was clicked.
                 else {
                     clickedCards[cardIndex] = 1;
-                    ctx.fillStyle = 'rgb(0, 191, 255, 0.55)';
-                    ctx.fillRect(selectPos, cardSize.vPos, selectWidth, cardSize.height);
+                    int_ctx.fillStyle = 'rgb(0, 191, 255, 0.55)';
+                    int_ctx.fillRect(selectPos, cardSize.vPos, selectWidth, cardSize.height);
                 }
             }
             else if (buttonClick && y > cardSize.vPos - 53 && y < cardSize.vPos - 10) {
                 
                 // Unselect the selected cards.
-                ctx.clearRect(0, cardSize.vPos, winWidth, winHeight);
+                int_ctx.clearRect(0, cardSize.vPos, winWidth, winHeight);
                 let selectedCards = [];
 
                 // If play button clicked.
@@ -171,19 +177,6 @@
         }
 
         promiseDeal.then(function(playerData) {
-
-            // // Implement passing.
-            // let gameForm = document.getElementById('gameForm');
-            // let passButton = document.getElementById('pass');
-            // let passed = false;
-            // gameForm.onsubmit = function(e) {
-            //     e.preventDefault();
-            //     passButton.onclick = socket.emit('cardClicked', {
-            //         playerID: playerData[1],
-            //         clickedCard: -1,
-            //         roomName: playerData[2]
-            //     })
-            // }
 
             // Implement card selection.
             int_canvas.addEventListener("click", event => clicked(event, playerData));
@@ -225,16 +218,63 @@
             });
         });
 
+        function new_room() {
+
+            console.log('drawing new room background.');
+            document.getElementById("lobby_div").style.display = 'inline';
+            let background = new Image();
+            background.onload = function () {
+                
+                // Buttons.
+                let backButton = new Image();
+                backButton.onload = function () {
+                    lobby_ctx.drawImage(backButton, winWidth / 4 + 90, 3/4 * winHeight, 204, 84);
+                };
+                backButton.src = 'client/images/back_button.png';
+                let confirmButton = new Image();
+                confirmButton.onload = function () {
+                    lobby_ctx.drawImage(confirmButton, winWidth * 3/4 - 320, 3/4 * winHeight, 204, 84);
+                };
+                confirmButton.src = 'client/images/confirm_create_room.png';
+
+                // Background.
+                lobby_ctx.fillStyle = 'rgb(0, 0, 0, 0.7)';
+                lobby_ctx.fillRect(0, 0, winWidth, winHeight);
+                lobby_ctx.shadowColor = 'black';
+                lobby_ctx.shadowBlur = 50;
+                lobby_ctx.fillRect(winWidth / 4, 150, winWidth / 2, winHeight * 3 / 4);
+                lobby_ctx.drawImage(background, winWidth / 4, 150, winWidth / 2, winHeight * 3 / 4);
+
+                // Title.
+                lobby_ctx.font = "bold 60px Arial";
+                lobby_ctx.textAlign = "center";
+                lobby_ctx.shadowBlur = 0;
+                lobby_ctx.fillStyle = 'black';
+                lobby_ctx.fillText('Create a new Room', winWidth / 2, 220);
+
+                // Room name text.
+                lobby_ctx.font = "bold 30px Arial";
+                lobby_ctx.textAlign = "left";
+                lobby_ctx.fillText('Enter a room name: ', winWidth / 4 + 40, 320);
+
+                // Select gamemode.
+                lobby_ctx.fillText('Select a gamemode: ', winWidth / 4 + 40, 420);
+
+                // Enter password.
+                lobby_ctx.fillText('Enter a password: ', winWidth / 4 + 40, 520);
+                lobby_ctx.fillText('(optional)', winWidth / 4 + 40, 550);
+                
+                // Room name box.
+                document.getElementById("roomName").style.left = winWidth / 2 + 'px';
+
+
+            };
+            background.src = 'client/images/new_room_background.jpg';
+        }
+
         socket.on('waitingRoom', function(rooms) {
 
-            let newRoom  = document.getElementById('new-room');
-            let roomName = document.getElementById('roomName');
-            newRoom.onsubmit = function(e) {
-                e.preventDefault();
-                console.log(roomName.value);
-            };
-
-            // Background.
+            // Background blur.
             const_ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
             const_ctx.fillRect(0, 0, winWidth, winHeight);
             const_ctx.shadowColor = 'black';
@@ -246,17 +286,19 @@
                 // Blue background.
                 const_ctx.drawImage(background, 100, 100, winWidth - 200, winHeight - 200);
 
-                // Text.
+                // Title.
                 const_ctx.font = "60px Arial";
                 const_ctx.textAlign = "center";
                 const_ctx.fillStyle = 'black';
                 const_ctx.shadowBlur = 2;
                 const_ctx.fillText('Welcome to Promote', winWidth / 2, 200);
-                const_ctx.font = "bold 20px Arial";
-                const_ctx.textAlign = "left";
-                const_ctx.shadowBlur = 0;
-                const_ctx.fillText('Create a room: ', 150, 300);
 
+                // Create room button.
+                let newRoomButton = new Image();
+                newRoomButton.onload = function () {
+                    const_ctx.drawImage(newRoomButton, 130, 290, 169, 50);
+                };
+                newRoomButton.src = 'client/images/create_room_button.png';
 
                 // Rooms box.
                 const_ctx.fillStyle = 'grey';
@@ -287,33 +329,37 @@
             };
             background.src = 'client/images/home_background.jpg';
 
-            // Join a room.
+            // Handle Clicks.
             int_canvas.addEventListener("click", clicked);
+
             function clicked(event) {
                 let x = event.clientX;
                 let y = event.clientY;
-
+                // If create room is clicked.
+                if (x > 130 && x < 300 && y > 290 && y < 340) {
+                    console.log('new room');
+                    new_room();
+                }
+            
+            
                 // If a room is clicked.
-                if (x > 125 && x < winWidth - 225 && 
-                    y > 350 && y < 350 + 30 * rooms.roomList.length)
-                {
-                    
+                if (x > 125 && x < winWidth - 225 && y > 350 && y < 350 + 30 * rooms.roomList.length) {
+            
                     // Check which room was clicked.
                     let roomNum = Math.floor((y - 350) / 30);
-
+            
                     // Tell the server which room to join.
                     socket.emit('roomJoined', {
                         name: rooms.roomList[roomNum],
                         roomNum: roomNum
                     });
-                    
                 }
             }  
         });
 
         socket.on ('joinRoom', function(room) {
 
-            document.getElementById('homepage').style.display = 'none';
+            document.getElementById('lobby_canvas').style.display = 'none';
             const_ctx.clearRect(0, 0, winWidth, winHeight);
 
             // Shows what room you are in.
