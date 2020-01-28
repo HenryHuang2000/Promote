@@ -265,7 +265,16 @@
                 lobby_ctx.fillText('(optional)', winWidth / 4 + 40, 550);
                 
                 // Room name box.
+                document.getElementById("roomName").style.display = 'block';
                 document.getElementById("roomName").style.left = winWidth / 2 + 'px';
+
+                // game Select Dropdown
+                document.getElementById("gameSelect").style.display = 'block';
+                document.getElementById("gameSelect").style.left = winWidth / 2 + 'px';
+
+                // Room name box.
+                document.getElementById("password").style.display = 'block';
+                document.getElementById("password").style.left = winWidth / 2 + 'px';
 
 
             };
