@@ -6,10 +6,11 @@ export default function server_connections(socket, io, ROOM_LIST, SOCKET_LIST) {
     // Handling new connections to home page.
     console.log('New home page connection assigned as player ' + socket.id);
     SOCKET_LIST[socket.id] = socket;
-    socket.emit('waitingRoom', {
+    socket.emit('sendToLobby', {
         roomList: ROOM_LIST,
         roomPlayers: ROOM_LIST.map(roomName => room_players(roomName))
     });
+
     // Joining a room.
     socket.on('roomJoined', function(room) {
         

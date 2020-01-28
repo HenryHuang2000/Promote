@@ -2,8 +2,10 @@ import {socket} from './retrieve_cards';
 import {winHeight, winWidth, const_ctx, int_canvas} from './canvas';
 import new_room from './create_new_room';
 
-socket.on('waitingRoom', function(rooms) {
+socket.on('sendToLobby', function(rooms) {
 
+
+    console.log(rooms);
     // Background blur.
     const_ctx.fillStyle = 'rgba(255, 255, 255, 0.3)'
     const_ctx.fillRect(0, 0, winWidth, winHeight);
@@ -44,12 +46,14 @@ socket.on('waitingRoom', function(rooms) {
             const_ctx.shadowBlur = 3;
             const_ctx.fillRect(125, 350 + 30 * i, winWidth - 350, 30);
 
-            // Print the room name.
+            // Print the game mode.
             const_ctx.font = "bold 20px Arial";
             const_ctx.textAlign = "left";
             const_ctx.shadowBlur = 0;
             const_ctx.fillStyle = 'black';
-            const_ctx.fillText(rooms.roomList[i], 150, 372 + 30 * i);
+            const_ctx.fillText(rooms.roomList[i].gameMode + ': ', 150, 372 + 30 * i);
+            // Print the room name.
+            const_ctx.fillText(rooms.roomList[i].name, 250, 372 + 30 * i);
 
             // Print number of players in room.
             const_ctx.textAlign = "right";
@@ -60,9 +64,7 @@ socket.on('waitingRoom', function(rooms) {
     background.src = 'client/images/home_background.jpg';
 
     // Handle Clicks.
-    int_canvas.addEventListener("click", clicked);
-
-    function clicked(event) {
+    int_canvas.addEventListener("click", function() {
         let x = event.clientX;
         let y = event.clientY;
     
@@ -86,7 +88,7 @@ socket.on('waitingRoom', function(rooms) {
                 roomNum: roomNum
             })
         }
-    }  
+    });
 })
 
 

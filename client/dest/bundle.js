@@ -220,7 +220,6 @@
 
         function new_room() {
 
-            console.log('drawing new room background.');
             document.getElementById("lobby_div").style.display = 'inline';
             let background = new Image();
             background.onload = function () {
@@ -279,10 +278,44 @@
 
             };
             background.src = 'client/images/new_room_background.jpg';
+
+            // Clicking buttons.
+            lobby_canvas.addEventListener("click", function() {
+                let x = event.clientX;
+                let y = event.clientY;
+
+                // Check click height.
+                if (y > 3/4 * winHeight && y < 3/4 * winHeight + 84) {
+                    // Check if back clicked.
+                    if (x > winWidth / 4 + 90 && x < winWidth / 4 + 294) {
+                        clear_canvas();
+                    }
+                            
+                    else if (x > winWidth * 3/4 - 320 && x <  winWidth * 3/4 - 116) {
+                        let newRoom = {
+                            name: document.getElementById("roomName").value,
+                            gameMode: document.getElementById("roomName").value
+                        };
+                        socket.emit('createNewRoom', newRoom);
+                        clear_canvas();
+                    }
+                }
+            });
         }
 
-        socket.on('waitingRoom', function(rooms) {
+        function clear_canvas() {
+            // Clear the fields.
+            document.getElementById("roomName").value = '';
+            document.getElementById("password").value = '';
+            // Clear canvas.
+            lobby_ctx.clearRect(0, 0, winWidth, winHeight);
+            document.getElementById("lobby_div").style.display = 'none';
+        }
 
+        socket.on('sendToLobby', function(rooms) {
+
+
+            console.log(rooms);
             // Background blur.
             const_ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
             const_ctx.fillRect(0, 0, winWidth, winHeight);
@@ -323,12 +356,14 @@
                     const_ctx.shadowBlur = 3;
                     const_ctx.fillRect(125, 350 + 30 * i, winWidth - 350, 30);
 
-                    // Print the room name.
+                    // Print the game mode.
                     const_ctx.font = "bold 20px Arial";
                     const_ctx.textAlign = "left";
                     const_ctx.shadowBlur = 0;
                     const_ctx.fillStyle = 'black';
-                    const_ctx.fillText(rooms.roomList[i], 150, 372 + 30 * i);
+                    const_ctx.fillText(rooms.roomList[i].gameMode + ': ', 150, 372 + 30 * i);
+                    // Print the room name.
+                    const_ctx.fillText(rooms.roomList[i].name, 250, 372 + 30 * i);
 
                     // Print number of players in room.
                     const_ctx.textAlign = "right";
@@ -339,9 +374,7 @@
             background.src = 'client/images/home_background.jpg';
 
             // Handle Clicks.
-            int_canvas.addEventListener("click", clicked);
-
-            function clicked(event) {
+            int_canvas.addEventListener("click", function() {
                 let x = event.clientX;
                 let y = event.clientY;
                 // If create room is clicked.
@@ -363,7 +396,7 @@
                         roomNum: roomNum
                     });
                 }
-            }  
+            });
         });
 
         socket.on ('joinRoom', function(room) {
@@ -375,7 +408,7 @@
             const_ctx.font = "60px Arial";
             const_ctx.textAlign = 'left';
             const_ctx.fillText('You are waiting for players', 100, 100);
-            const_ctx.fillText('room name: ' + room.name, 100, 180);
+            const_ctx.fillText('room name: ' + room.name.name, 100, 180);
         });
 
         const sharedHeight = cardSize.vPos - 50;

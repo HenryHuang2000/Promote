@@ -1,8 +1,8 @@
 import {lobby_canvas, lobby_ctx, winWidth, winHeight} from './canvas';
+import { socket } from './retrieve_cards';
 
 export default function new_room() {
 
-    console.log('drawing new room background.');
     document.getElementById("lobby_div").style.display = 'inline';
     let background = new Image();
     background.onload = function () {
@@ -61,4 +61,36 @@ export default function new_room() {
 
     }
     background.src = 'client/images/new_room_background.jpg';
+
+    // Clicking buttons.
+    lobby_canvas.addEventListener("click", function() {
+        let x = event.clientX;
+        let y = event.clientY;
+
+        // Check click height.
+        if (y > 3/4 * winHeight && y < 3/4 * winHeight + 84) {
+            // Check if back clicked.
+            if (x > winWidth / 4 + 90 && x < winWidth / 4 + 294) {
+                clear_canvas();
+            }
+                    
+            else if (x > winWidth * 3/4 - 320 && x <  winWidth * 3/4 - 116) {
+                let newRoom = {
+                    name: document.getElementById("roomName").value,
+                    gameMode: document.getElementById("roomName").value
+                }
+                socket.emit('createNewRoom', newRoom);
+                clear_canvas();
+            }
+        }
+    });
+}
+
+function clear_canvas() {
+    // Clear the fields.
+    document.getElementById("roomName").value = '';
+    document.getElementById("password").value = '';
+    // Clear canvas.
+    lobby_ctx.clearRect(0, 0, winWidth, winHeight);
+    document.getElementById("lobby_div").style.display = 'none';
 }
