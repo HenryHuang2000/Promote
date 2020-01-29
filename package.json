@@ -9,7 +9,7 @@
     "socket.io": "^2.3.0"
   },
   "engines": {
-      "node": "4.1.x"
+      "node": "13.5.x"
   },
   "devDependencies": {
     "rollup": "^1.29.0"
