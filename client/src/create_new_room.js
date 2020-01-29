@@ -79,7 +79,8 @@ export default function new_room() {
                     name: document.getElementById("roomName").value,
                     gameMode: document.getElementById("roomName").value
                 }
-                socket.emit('createNewRoom', newRoom);
+                alert('Sorry, creating new rooms is still under development.');
+                // socket.emit('createNewRoom', newRoom);
                 clear_canvas();
             }
         }
