@@ -276,7 +276,7 @@
       res.sendFile(__dirname + '/client/index.html');
   });
   app.use('/client',express.static(__dirname + '/client'));
-  serv.listen(2000);
+  serv.listen(process.env.PORT || 2000);
   console.log('Server started.');
 
   // Keeps a list of all connected players.
