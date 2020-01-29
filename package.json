@@ -9,13 +9,13 @@
     "socket.io": "^2.3.0"
   },
   "engines": {
-      "node": "13.5.x"
+    "node": "13.x"
   },
   "devDependencies": {
     "rollup": "^1.29.0"
   },
   "scripts": {
-    "start": "game.js"
+    "start": "node game.js"
   },
   "author": "",
   "license": "ISC"
