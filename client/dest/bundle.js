@@ -296,7 +296,8 @@
                             name: document.getElementById("roomName").value,
                             gameMode: document.getElementById("roomName").value
                         };
-                        socket.emit('createNewRoom', newRoom);
+                        alert('Sorry, creating new rooms is still under development.');
+                        // socket.emit('createNewRoom', newRoom);
                         clear_canvas();
                     }
                 }
@@ -333,7 +334,7 @@
                 const_ctx.textAlign = "center";
                 const_ctx.fillStyle = 'black';
                 const_ctx.shadowBlur = 2;
-                const_ctx.fillText('Welcome to Promote', winWidth / 2, 200);
+                const_ctx.fillText('Welcome to Cardsparty', winWidth / 2, 200);
 
                 // Create room button.
                 let newRoomButton = new Image();
