@@ -6,10 +6,15 @@ export default function server_connections(socket, io, ROOM_LIST, SOCKET_LIST) {
     // Handling new connections to home page.
     console.log('New home page connection assigned as player ' + socket.id);
     SOCKET_LIST[socket.id] = socket;
-    socket.emit('sendToLobby', {
-        roomList: ROOM_LIST,
-        roomPlayers: ROOM_LIST.map(roomName => room_players(roomName))
+    to_lobby(socket, 'sendToLobby');
+
+
+    // Handling new room request.
+    socket.on('createNewRoom', function(room) {
+        ROOM_LIST.push(room);
+        to_lobby(io, 'refreshLobby');
     });
+
 
     // Joining a room.
     socket.on('roomJoined', function(room) {
@@ -19,10 +24,12 @@ export default function server_connections(socket, io, ROOM_LIST, SOCKET_LIST) {
             return;
         } else {
             socket.emit('joinRoom', {
-                name: room.name
+                name: room.name,
+                username: room.username
             });
             console.log(room.name + ' has been joined by ' + socket.id);
             socket.join(room.name);
+            to_lobby(socket.broadcast, 'refreshLobby');
         }
 
         // If all players have joined, deal the cards.
@@ -55,9 +62,17 @@ export default function server_connections(socket, io, ROOM_LIST, SOCKET_LIST) {
         return clients.length;
     }
 
+    function to_lobby(target, message) {
+        target.emit(message, {
+            roomList: ROOM_LIST,
+            roomPlayers: ROOM_LIST.map(roomName => room_players(roomName.name))
+        });
+    }
+
     // Handling disconnects.
     socket.on('disconnect', function() {
         delete SOCKET_LIST[socket.id];
+        to_lobby(socket.broadcast, 'refreshLobby');
         console.log('player ' + (socket.id) + ' disconnected');
     })
     return [SOCKET_LIST, ROOM_LIST];

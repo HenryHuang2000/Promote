@@ -48,10 +48,15 @@
       // Handling new connections to home page.
       console.log('New home page connection assigned as player ' + socket.id);
       SOCKET_LIST[socket.id] = socket;
-      socket.emit('sendToLobby', {
-          roomList: ROOM_LIST,
-          roomPlayers: ROOM_LIST.map(roomName => room_players(roomName))
+      to_lobby(socket, 'sendToLobby');
+
+
+      // Handling new room request.
+      socket.on('createNewRoom', function(room) {
+          ROOM_LIST.push(room);
+          to_lobby(io, 'refreshLobby');
       });
+
 
       // Joining a room.
       socket.on('roomJoined', function(room) {
@@ -61,10 +66,12 @@
               return;
           } else {
               socket.emit('joinRoom', {
-                  name: room.name
+                  name: room.name,
+                  username: room.username
               });
               console.log(room.name + ' has been joined by ' + socket.id);
               socket.join(room.name);
+              to_lobby(socket.broadcast, 'refreshLobby');
           }
 
           // If all players have joined, deal the cards.
@@ -97,9 +104,17 @@
           return clients.length;
       }
 
+      function to_lobby(target, message) {
+          target.emit(message, {
+              roomList: ROOM_LIST,
+              roomPlayers: ROOM_LIST.map(roomName => room_players(roomName.name))
+          });
+      }
+
       // Handling disconnects.
       socket.on('disconnect', function() {
           delete SOCKET_LIST[socket.id];
+          to_lobby(socket.broadcast, 'refreshLobby');
           console.log('player ' + (socket.id) + ' disconnected');
       });
       return [SOCKET_LIST, ROOM_LIST];
@@ -284,8 +299,10 @@
   // Keeps a list of all rooms.
   let default_room = {
       name: 'Default room',
-      gameMode: 'Big Two'
+      gameMode: 'Big Two',
+      password: ''
   };
+
   let ROOM_LIST = [default_room];
 
   // Keep track of game Data.
@@ -300,12 +317,6 @@
 
   var io = require('socket.io')(serv,{});
   io.sockets.on('connection', function(socket){
-
-
-      // Handling new room request.
-      socket.on('createNewRoom', function(room) {
-          ROOM_LIST.push(room);
-      });
 
 
       let lists = server_connections(socket, io, ROOM_LIST, SOCKET_LIST);

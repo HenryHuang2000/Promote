@@ -5,7 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Cardsparty</title>
+    
     <style type="text/css">
+        .noselect {
+            -webkit-touch-callout: none; /* iOS Safari */
+            -webkit-user-select: none; /* Safari */
+            -khtml-user-select: none; /* Konqueror HTML */
+            -moz-user-select: none; /* Old versions of Firefox */
+            -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                supported by Chrome, Opera and Firefox */
+        }
+
         canvas {
             background: no-repeat url("client/images/table.jpg");
             background-size: cover;
@@ -24,6 +35,19 @@
             left: 480px;
         }
 
+        .button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+        }
+
 
     </style>
     <script src = "/socket.io/socket.io.js"></script>
@@ -40,7 +64,7 @@
             id = "roomName"/>
 
         <select style = "z-index:101; position:absolute; top: 403px; display: none"
-            id = "gameSelect">
+            id = "gameMode">
 
             <option value="Big Two">Big Two</option>
         </select>
@@ -49,6 +73,12 @@
         style = "z-index:101; position:absolute; top: 500px; display: none"
         autocomplete="off"
         id = "password"/>
+
+        <button type="button"
+        id = "submitButton"
+        style = "z-index:101; position:absolute; display: none"
+        class = "noselect button"
+        >Enter</button>
 
         <canvas id = "lobby_canvas" style = "background: none"></canvas>
     </div>

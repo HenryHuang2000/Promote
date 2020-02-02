@@ -18,8 +18,10 @@ var SOCKET_LIST = {};
 // Keeps a list of all rooms.
 let default_room = {
     name: 'Default room',
-    gameMode: 'Big Two'
+    gameMode: 'Big Two',
+    password: ''
 }
+
 let ROOM_LIST = [default_room];
 
 // Keep track of game Data.
@@ -34,12 +36,6 @@ let gameData = {
 
 var io = require('socket.io')(serv,{});
 io.sockets.on('connection', function(socket){
-
-
-    // Handling new room request.
-    socket.on('createNewRoom', function(room) {
-        ROOM_LIST.push(room);
-    });
 
 
     let lists = server_connections(socket, io, ROOM_LIST, SOCKET_LIST);
